@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --accent: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 250px;
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 3rem;
+            color: var(--accent);
+        }
+
+        nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: block;
+            transition: 0.2s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: white;
+        }
+
+        nav a.active {
+            border-left: 3px solid var(--accent);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .form-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        input,
+        select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 8px;
+        }
+
+        input[readonly] {
+            background: rgba(0, 0, 0, 0.3);
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .cancel-btn {
+            background: #64748b;
+            margin-left: 10px;
+            display: none;
+        }
+
+        .list-container {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            color: #94a3b8;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo">Admin Portal</div>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/students" class="active">Manage Students</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout" style="margin-top: auto; color: #ef4444;">Logout</a>
+        </nav>
+    </aside>
+
+    <main>
+        <h2>Manage Students</h2>
+        <p style="color: #94a3b8; margin-bottom: 2rem;">Add or Edit student details.</p>
+
+        <div class="form-card">
+            <form id="student-form" class="form-grid">
+                <div>
+                    <label style="font-size: 0.8rem; margin-bottom:4px; display:block;">Name (Unique ID)</label>
+                    <input type="text" id="name" placeholder="e.g. Kishore" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; margin-bottom:4px; display:block;">Class</label>
+                    <!-- Changed to Input with Datalist for flexibility -->
+                    <input type="text" id="class_name" list="class-options" placeholder="Select or Type" required>
+                    <datalist id="class-options">
+                        <option value="B.Sc">
+                        <option value="BCA">
+                        <option value="M.Sc">
+                        <option value="M.Sc CST">
+                    </datalist>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; margin-bottom:4px; display:block;">Year</label>
+                    <select id="year">
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; margin-bottom:4px; display:block;">Phone</label>
+                    <input type="text" id="phone" placeholder="98765...">
+                </div>
+                <div style="display:flex;">
+                    <button type="submit" id="save-btn">Add Student</button>
+                    <button type="button" id="cancel-btn" class="cancel-btn" onclick="resetForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="list-container">
+            <h3>Registered Students</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Class</th>
+                        <th>Year</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="students-body"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        let studentsData = {}; // Store raw data here to avoid HTML quoting issues
+
+        function loadStudents() {
+            fetch('/api/students').then(res => res.json()).then(data => {
+                const tbody = document.getElementById('students-body');
+                tbody.innerHTML = '';
+                studentsData = {}; // Reset
+
+                data.forEach(s => {
+                    studentsData[s.name] = s; // Map by name
+                    const phone = s.phone || '-';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${s.name}</td>
+                            <td>${s.class_name}</td>
+                            <td>${s.year} Year</td>
+                            <td>${phone}</td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="editStudent('${s.name}')">Edit</button>
+                                <button class="action-btn delete-btn" onclick="deleteStudent('${s.name}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function editStudent(name) {
+            const s = studentsData[name];
+            if (!s) return;
+
+            document.getElementById('name').value = s.name;
+            document.getElementById('name').readOnly = true; // Lock Name ID
+
+            document.getElementById('class_name').value = s.class_name;
+            document.getElementById('year').value = s.year;
+            document.getElementById('phone').value = s.phone || '';
+
+            // Update UI State
+            document.getElementById('save-btn').innerText = "Update Student";
+            document.getElementById('save-btn').style.background = "#f59e0b";
+            document.getElementById('cancel-btn').style.display = "block";
+
+            document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('student-form').reset();
+            document.getElementById('name').readOnly = false;
+            document.getElementById('save-btn').innerText = "Add Student";
+            document.getElementById('save-btn').style.background = "#3b82f6";
+            document.getElementById('cancel-btn').style.display = "none";
+        }
+
+        async function deleteStudent(name) {
+            if (!confirm('Delete ' + name + '? This cannot be undone.')) return;
+            await fetch('/api/students?name=' + encodeURIComponent(name), { method: 'DELETE' });
+            loadStudents();
+        }
+
+        document.getElementById('student-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                class_name: document.getElementById('class_name').value,
+                year: document.getElementById('year').value,
+                phone: document.getElementById('phone').value
+            };
+
+            await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            alert('Saved successfully!');
+            resetForm();
+            loadStudents();
+        });
+
+        loadStudents();
+    </script>
+</body>
+
+</html>

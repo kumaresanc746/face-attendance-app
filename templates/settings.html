@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --accent: #3b82f6;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 250px;
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 3rem;
+            color: var(--accent);
+        }
+
+        nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: block;
+            transition: 0.2s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: white;
+        }
+
+        nav a.active {
+            border-left: 3px solid var(--accent);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .section-card {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        h3 {
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo">Admin Portal</div>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/students">Manage Students</a>
+            <a href="/settings" class="active">Settings</a>
+            <a href="/logout" style="margin-top: auto; color: #ef4444;">Logout</a>
+        </nav>
+    </aside>
+
+    <main>
+        <h2>System Settings</h2>
+        <p style="color: #94a3b8; margin-bottom: 2rem;">Manage system data and configurations.</p>
+
+        <div class="section-card" style="border: 1px solid rgba(245, 158, 11, 0.3);">
+            <h3>Clear Attendance Logs</h3>
+            <p>This will delete all daily attendance records (Present/Absent logs). <strong>Student details will remain
+                    safe.</strong> Use this when starting a new academic year or semester.</p>
+            <button class="btn btn-warning" onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <div class="section-card" style="border: 1px solid rgba(239, 68, 68, 0.3);">
+            <h3 style="color: var(--danger);">Factory Reset</h3>
+            <p>This will delete <strong>EVERYTHING</strong>: all students, all logs, and all configurations. The system
+                will be empty. This action cannot be undone.</p>
+            <button class="btn btn-danger" onclick="factoryReset()">Factory Reset</button>
+        </div>
+    </main>
+
+    <script>
+        async function clearLogs() {
+            if (!confirm('Are you sure you want to delete all attendance logs?')) return;
+            const res = await fetch('/api/clear_logs', { method: 'POST' });
+            if (res.ok) alert('All logs cleared!');
+        }
+
+        async function factoryReset() {
+            const code = prompt("Type 'DELETE' to confirm factory reset:");
+            if (code !== 'DELETE') return;
+
+            const res = await fetch('/api/factory_reset', { method: 'POST' });
+            if (res.ok) {
+                alert('System Reset Complete.');
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>
