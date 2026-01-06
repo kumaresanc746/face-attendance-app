@@ -157,17 +157,27 @@
         </header>
 
         <div class="grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Students</div>
-                <div class="stat-value" id="total-students">-</div>
+            <div class="stat-card" style="grid-column: span 2; display: flex; flex-direction: column;">
+                <div class="stat-label">Live Monitoring</div>
+                <div
+                    style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">
+                    <img src="{{ url_for('video_feed') }}" style="width: 100%; height: 100%; object-fit: contain;"
+                        alt="Live Feed">
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Present Today</div>
-                <div class="stat-value" id="present-today" style="color: #10b981;">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Active Classes</div>
-                <div class="stat-value" id="active-depts">-</div>
+            <div style="display: grid; gap: 1.5rem;">
+                <div class="stat-card">
+                    <div class="stat-label">Total Students</div>
+                    <div class="stat-value" id="total-students">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Present Today</div>
+                    <div class="stat-value" id="present-today" style="color: #10b981;">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Classes</div>
+                    <div class="stat-value" id="active-depts">-</div>
+                </div>
             </div>
         </div>
 

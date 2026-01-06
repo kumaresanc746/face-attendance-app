@@ -1,6 +1,13 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session, flash
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session, flash, Response
 import sqlite3
 import functools
+import cv2
+import os
+import pickle
+import numpy as np
+from datetime import datetime
+from PIL import Image
+from configs import *
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_change_me_in_production'  # Required for session
@@ -11,33 +18,73 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-def init_db():
-    conn = get_db_connection()
-    # Create logs table (if not exists)
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            date TEXT NOT NULL,
-            time TEXT NOT NULL,
-            status TEXT NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    # Create students table (New)
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE NOT NULL,
-            class_name TEXT NOT NULL,
-            year TEXT NOT NULL,
-            phone TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
 init_db()
+
+# Load Face Recognition Model
+faceCascade = cv2.CascadeClassifier(cascadePath)
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+
+if os.path.exists(outfile):
+    recognizer.read(outfile)
+    with open(label_name_map_file, 'rb') as handle:
+        label_name_map = pickle.load(handle)
+else:
+    label_name_map = {}
+    print("Warning: Model file not found. Please train images first.")
+
+# Set to track who has been logged in this session
+logged_attendees = set()
+
+def log_attendance_web(name):
+    """Logs the attendance to SQLite if not already logged this session"""
+    if name in logged_attendees:
+        return
+
+    try:
+        now = datetime.now()
+        today_date = now.strftime("%Y-%m-%d")
+        current_time = now.strftime("%H:%M:%S")
+        
+        conn = get_db_connection()
+        conn.execute("INSERT INTO logs (name, date, time, status) VALUES (?, ?, ?, ?)",
+                       (name, today_date, current_time, "Present"))
+        conn.commit()
+        conn.close()
+        
+        logged_attendees.add(name)
+    except Exception as e:
+        print(f"Error logging to Database: {e}")
+
+def gen_frames():
+    """Video streaming generator function."""
+    camera = cv2.VideoCapture(0)  # Use 0 for local webcam or URL for IP cam
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = faceCascade.detectMultiScale(gray, scaleFactor, minNeighbors, cascadeFlags, minSize)
+            
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                
+                if label_name_map:
+                    try:
+                        name_predicted, confidence = recognizer.predict(cv2.resize(gray[y:y+h, x:x+w], face_resolution))
+                        if name_predicted != 0 and confidence < confidence_threshold:
+                            name = label_name_map.get(name_predicted, "Unknown")
+                            cv2.putText(frame, name, (x + 3, y + h + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0))
+                            log_attendance_web(name)
+                        else:
+                            cv2.putText(frame, "Unknown", (x + 3, y + h + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255))
+                    except Exception as e:
+                        print(f"Prediction error: {e}")
+
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 # Login Decorator
 def login_required(view):
@@ -183,6 +230,13 @@ def factory_reset():
         return jsonify({'error': str(e)})
     finally:
         conn.close()
+
+@app.route('/video_feed')
+@login_required
+def video_feed():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(gen_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
