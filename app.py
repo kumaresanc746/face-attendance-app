@@ -83,10 +83,22 @@ def log_attendance_web(name):
 
 def gen_frames():
     """Video streaming generator function."""
-    camera = cv2.VideoCapture(0)  # Use 0 for local webcam or URL for IP cam
+    # Since this is on AWS, VideoCapture(0) will fail as there is no physical camera.
+    # Replace the '0' with your IP Camera URL if you have one.
+    # Example: camera_source = "http://192.168.1.100:8080/video"
+    camera_source = 0 
+    
+    camera = cv2.VideoCapture(camera_source)
+    
+    if not camera.isOpened():
+        print(f"Error: Could not open camera source {camera_source}")
+        # Yield a placeholder "Camera Not Found" frame if possible, or just exit
+        return
+
     while True:
         success, frame = camera.read()
         if not success:
+            print("Error: Failed to read frame from camera")
             break
         else:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
